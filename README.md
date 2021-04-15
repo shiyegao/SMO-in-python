@@ -1,2 +1,2 @@
 # SMO in python
- simple SMO in python, able to genarate data, train, and test
+ simple SMO in python, able to generate data, train, and test
