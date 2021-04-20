@@ -1,5 +1,6 @@
-# SMO in python
- simple SMO in python, able to generate data, train, and test
+# SMO in Python and Cross Validation
++ Simple SMO in python, able to generate data, train, test, and compare with svm.SVC
++ Cross validation codes for comparison of different models, using metrics like accuracy and F1 score 
 
 # Installation
 + Clone this repo:
