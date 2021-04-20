@@ -18,7 +18,7 @@ pip install -r requirements.txt
 ```bash
 python smo.py
 ```
-We have prepared some pretrained models(parameters) in (/data/parameter_*)[https://github.com/shiyegao/SMO-in-python/tree/master/data], you can change some codes in SMO.py to just test the pretrained model.
+We have prepared some pretrained models(parameters) in [/data/parameter_*](https://github.com/shiyegao/SMO-in-python/tree/master/data), you can change some codes in SMO.py to just test the pretrained model.
 ## run Cross Validation
 ```bash
 python cross_val.py
