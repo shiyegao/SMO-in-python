@@ -22,7 +22,7 @@ class SMO():
         if L > a_j: a_j = L
         return a_j
 
-    def fit(self, data, label):
+    def fit(self, data, label, save=False):
         dataMatrix = np.mat(data)
         label = np.array([-1 if i==0 else 1 for i in label])
         labelMatrix = np.mat(label).transpose()
@@ -76,18 +76,23 @@ class SMO():
                 iter += 1
             else:
                 iter = 0
-            if not iter%10 and iter!=0: print("iteration number: %d" % iter)
+            if not iter%10 and iter!=0: 
+                w = dataMatrix.T @ np.multiply(alpha, labelMatrix)
+                res = (dataMatrix @ w + b) > 0
+                print("Current Acc", np.sum(res==labelMatrix)/labelMatrix.shape[0])
+                print("iteration number: %d" % iter)
         self.b = b
         self.alpha = alpha
         self.w = dataMatrix.T @ np.multiply(alpha, labelMatrix)
-        np.savez("parameter_0001.npz", b=b, alpha=alpha, w=self.w)
+        if save: np.savez("data/parameter_{}.npz".format(self.mv_tol), b=b, alpha=alpha, w=self.w)
         return b, alpha, self.w
 
-    def test(self, data, label, w=None):
+    def test(self, data, label, w=None, b=None):
         if w is None: w=self.w
+        if b is None: b=self.b
         dataMatrix = np.mat(data)
         labelMatrix = np.mat(label).transpose()
-        res = (dataMatrix @ w) > 0
+        res = (dataMatrix @ w + b) > 0
         return np.sum(res==labelMatrix)/labelMatrix.shape[0]
 
 def make_datasets():    
@@ -99,39 +104,46 @@ def make_datasets():
     print(y_train.shape)
     
 
-    data = pd.read_csv('./datasets/gpl97.csv')
-    d = np.array(data.values.tolist())
-    x_test = d[:, :-1]
-    y_test = d[:, -1]
+    data_ = pd.read_csv('./datasets/gpl97.csv')
+    d_ = np.array(data_.values.tolist())
+    x_test = d_[:, :-1]
+    y_test = d_[:, -1]
     print(x_test.shape)
     print(y_test.shape)
 
-    np.savez("data.npz", x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test)
+    np.savez("data/data.npz", x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test)
 
 def main():
 
     # make_datasets()
 
     # loading
-    data = np.load("data.npz")
+    data = np.load("data/data.npz")
     x_train, y_train = data["x_train"], data["y_train"]
     x_test, y_test = data["x_test"], data["y_test"]
 
     # Sklearn
-    sk_model = svm.LinearSVC(C=0.6, tol=0.001)
+    sk_model = svm.LinearSVC(C=0.6, tol=0.01, max_iter=1e5)
     sk_model.fit(x_train, y_train)
-    sk_acc = sk_model.score(x_test, y_test)
-    print("Sklearn Accuracy:", sk_acc)
+    sk_acc_tr = sk_model.score(x_train, y_train)
+    sk_acc_te = sk_model.score(x_test, y_test)
+    print("Sklearn Training Accuracy:", sk_acc_tr)
+    print("Sklearn Testing Accuracy:", sk_acc_te)
 
     # training
-    model = SMO(C=0.6, toler=0.001, max_iter=40, mv_tol=0.001)
-    # b, _, _ = model.fit(x_train,y_train)
-    # print(b)
+    model = SMO(C=0.6, toler=0.001, max_iter=40, mv_tol=0.01)
+    b, _, _ = model.fit(x_train, y_train, save=False)
+    print(b)
 
     # testing
-    w = np.load("parameter_0001.npz")["w"]
-    acc = model.test(x_test, y_test, w)
-    print("My Accuracy:", acc)
+    # param = np.load("data/parameter_0.01.npz")
+    # w, b = param["w"], param["b"]
+    # acc_tr = model.test(x_train, y_train, w, b)
+    # acc_te = model.test(x_test, y_test, w, b)
+    acc_tr = model.test(x_train, y_train)
+    acc_te = model.test(x_test, y_test)
+    print("My Training Accuracy:", acc_tr)
+    print("My Testing Accuracy:", acc_te)
 
 
 
